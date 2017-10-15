@@ -54,3 +54,43 @@ with open(os.path.join(output, "inter/CNS11643.txt"), "w") as f:
     for ucs in ucsl:
         cns = ucs_cns[ucs]
         f.write("01{}\t02{}\n".format(ucs, cns))
+
+# ZH-COMP / ZH-DECOMP
+compmap = {1111:"0400"}
+with open(os.path.join(dataset, "Properties/CNS_component_word.txt"), encoding="UTF-16LE") as f:
+    for l in f:
+        l = l .strip().strip("\ufeff")
+        if not l:
+            continue
+        la = l.split("\t")
+        compmap[int(la[0])] = "04" + p("{:X}".format(int(la[1])))
+
+compdata = {}
+with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
+    for l in f:
+        l = l.strip()
+        if not l:
+            continue
+        la = l.split("\t")
+        cns = "{}{}".format(p(la[0]), p(la[1]))
+        cpss = la[2].split(";")
+        error = False
+        try:
+            for i, c in enumerate(cpss):
+                cpss[i] = [int(x) for x in c.split(",")]
+                for j,t in enumerate(cpss[i]):
+                    if not t in compmap:
+                        error = True
+                        print("Error:", l, "# undefined component", t)
+        except:
+            error = True
+            print("Error:", l, "# unexpected format")
+        if not error:
+            cps = ",".join([compmap[int(x)] for x in cpss[0]])
+            compdata[cns] = cps
+compl = sorted(compdata.keys())
+with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
+    for cns in compl:
+        cps = compdata[cns]
+        zhdecomp.write("02{}\t{}\n".format(cns, cps))
+        zhcomp.write("{}\t02{}\n".format(cps, cns))
