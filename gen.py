@@ -49,3 +49,8 @@ with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os
             pua.write("02{}\t01{}\n".format(cns, ucs))
         else:
             f.write("02{}\t01{}\n".format(cns, ucs))
+
+with open(os.path.join(output, "inter/CNS11643.txt"), "w") as f:
+    for ucs in ucsl:
+        cns = ucs_cns[ucs]
+        f.write("01{}\t02{}\n".format(ucs, cns))
