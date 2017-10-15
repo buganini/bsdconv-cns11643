@@ -105,7 +105,7 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             compdata[ucs] = cps
 
 with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
-    for ucs in sorted(compdata.keys()):
+    for ucs in sorted(compdata.keys(), key=lambda x: int(x, 16)):
         cps = compdata[ucs]
         zhdecomp.write("01{}\t{}\n".format(ucs, cps))
         zhcomp.write("{}\t01{}\n".format(cps, ucs))
