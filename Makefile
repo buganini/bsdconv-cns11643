@@ -10,6 +10,7 @@ TODO_CODECS+=from/_CNS11643
 TODO_CODECS+=inter/CHEWING
 TODO_CODECS+=inter/CNS11643
 TODO_CODECS+=inter/CNS11643-UNICODE
+TODO_CODECS+=inter/CNS11643-UNICODE-PUA
 TODO_CODECS+=inter/HAN-PINYIN
 TODO_CODECS+=inter/ZH-COMP
 TODO_CODECS+=inter/ZH-DECOMP
@@ -44,3 +45,16 @@ install: | installdir
 
 clean:
 	rm -rf build
+
+# Source: https://data.gov.tw/dataset/5961
+
+work/data.zip:
+	mkdir -p work
+	wget -O work/data.zip http://www.cns11643.gov.tw/AIDB/Open_Data.zip
+
+work/data: work/data.zip
+	mkdir -p work/data
+	unzip -d work/data work/data.zip
+
+gen: work/data
+	python3 gen.py work/data/Open_Data modules
