@@ -39,11 +39,9 @@ for tbl in UNICODE_CNS_MAPPING_TABLE:
             ucs = "{}".format(p(la[2]))
             cns_ucs[cns] = ucs
             ucs_cns[ucs] = cns
-cnsl = sorted(cns_ucs.keys())
-ucsl = sorted(ucs_cns.keys())
 
 with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os.path.join(output, "inter/CNS11643-UNICODE-PUA.txt"), "w") as pua:
-    for cns in cnsl:
+    for cns in sorted(cns_ucs.keys()):
         ucs = cns_ucs[cns]
         if inUnicodePUA(ucs):
             pua.write("02{}\t01{}\n".format(cns, ucs))
@@ -51,11 +49,11 @@ with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os
             f.write("02{}\t01{}\n".format(cns, ucs))
 
 with open(os.path.join(output, "inter/CNS11643.txt"), "w") as f:
-    for ucs in ucsl:
+    for ucs in sorted(ucs_cns.keys()):
         cns = ucs_cns[ucs]
         f.write("01{}\t02{}\n".format(ucs, cns))
 
-# ZH-COMP / ZH-DECOMP
+################################################################################
 compmap = {1111:"0400"}
 with open(os.path.join(dataset, "Properties/CNS_component_word.txt"), encoding="UTF-16LE") as f:
     for l in f:
@@ -88,9 +86,10 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
         if not error:
             cps = ",".join([compmap[int(x)] for x in cpss[0]])
             compdata[cns] = cps
-compl = sorted(compdata.keys())
+
 with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
-    for cns in compl:
+    for cns in sorted(compdata.keys()):
         cps = compdata[cns]
-        zhdecomp.write("02{}\t{}\n".format(cns, cps))
-        zhcomp.write("{}\t02{}\n".format(cps, cns))
+        ucs = cns_ucs[cns]
+        zhdecomp.write("01{}\t{}\n".format(ucs, cps))
+        zhcomp.write("{}\t01{}\n".format(cps, ucs))
