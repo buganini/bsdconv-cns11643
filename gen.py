@@ -1,5 +1,6 @@
 import os
 import sys
+import bsdconv
 
 dataset = sys.argv[1]
 output = sys.argv[2]
@@ -20,7 +21,11 @@ def inUnicodePUA(cp):
         return True
     return False
 
-# Unicode - CNS11643 Mapping
+brepr = bsdconv.Bsdconv("utf-8:bsdconv")
+def bsdconv_repr(s):
+    return brepr.conv(s)
+
+################################################################################
 UNICODE_CNS_MAPPING_TABLE = (
     "MapingTables/Unicode/CNS2UNICODE_Unicode BMP.txt",
     "MapingTables/Unicode/CNS2UNICODE_Unicode 2.txt",
@@ -93,3 +98,26 @@ with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os
         cps = compdata[ucs]
         zhdecomp.write("01{}\t{}\n".format(ucs, cps))
         zhcomp.write("{}\t01{}\n".format(cps, ucs))
+
+################################################################################
+chewing = {}
+with open(os.path.join(dataset, "Properties/CNS_phonetic.txt")) as f:
+    for l in f:
+        l = l.strip()
+        if not l:
+            continue
+        la = l.split("\t")
+        cns = "{}{}".format(p(la[0]), p(la[1]))
+        ucs = cns_ucs[cns]
+        phonetic = la[2]
+        if phonetic[0]=="˙":
+            phonetic = phonetic[1:] + phonetic[0]
+        if not phonetic[-1] in "ˊˇˋ˙":
+            phonetic = phonetic + " "
+        phonetic = ",".join([bsdconv_repr(x) for x in phonetic])
+        chewing[ucs] = phonetic
+
+with open(os.path.join(output, "inter/CHEWING.txt"), "w") as out:
+    for ucs in sorted(chewing.keys()):
+        phonetic = chewing[ucs]
+        out.write("01{}\t{}\n".format(ucs, phonetic))
