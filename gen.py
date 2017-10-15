@@ -71,6 +71,7 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             continue
         la = l.split("\t")
         cns = "{}{}".format(p(la[0]), p(la[1]))
+        ucs = cns_ucs[cns]
         cpss = la[2].split(";")
         error = False
         try:
@@ -85,11 +86,10 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             print("Error:", l, "# unexpected format")
         if not error:
             cps = ",".join([compmap[int(x)] for x in cpss[0]])
-            compdata[cns] = cps
+            compdata[ucs] = cps
 
 with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
-    for cns in sorted(compdata.keys()):
-        cps = compdata[cns]
-        ucs = cns_ucs[cns]
+    for ucs in sorted(compdata.keys()):
+        cps = compdata[ucs]
         zhdecomp.write("01{}\t{}\n".format(ucs, cps))
         zhcomp.write("{}\t01{}\n".format(cps, ucs))
