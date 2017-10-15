@@ -12,7 +12,7 @@ struct my_s{
 
 int cbcreate(struct bsdconv_instance *ins, struct bsdconv_hash_entry *arg){
 	struct my_s *r=malloc(sizeof(struct my_s));
-	r->uni=bsdconv_create("UNICODE");
+	r->uni=bsdconv_create("CNS11643-UNICODE");
 	THIS_CODEC(ins)->priv=r;
 	return 0;
 }
