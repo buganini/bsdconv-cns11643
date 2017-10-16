@@ -71,9 +71,9 @@ with open(os.path.join(output, "inter/CNS11643.txt"), "w") as f:
 
 ################################################################################
 compmap = {1111:"0400"}
-with open(os.path.join(dataset, "Properties/CNS_component_word.txt"), encoding="UTF-16LE") as f:
+with open(os.path.join(dataset, "Properties/CNS_component_word.txt")) as f:
     for l in f:
-        l = l.strip().strip("\ufeff")
+        l = l.strip()
         if not l:
             continue
         la = l.split("\t")
@@ -132,9 +132,9 @@ with open(os.path.join(output, "inter/CHEWING.txt"), "w") as out:
 
 ################################################################################
 pinyin = {}
-with open(os.path.join(dataset, "Properties/CNS_pinyin.txt"), encoding="UTF-16LE") as f:
+with open(os.path.join(dataset, "Properties/CNS_pinyin.txt")) as f:
     for l in f:
-        l = l.strip().strip("\ufeff")
+        l = l.strip()
         if not l:
             continue
         la = l.split("\t")
