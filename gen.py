@@ -12,7 +12,7 @@ def p(s):
         return "0" + s
     return s
 
-def inUnicodePUA(cp):
+def in_unicode_pua(cp):
     cp = int(cp, 16)
     if 0xE000 <= cp and cp <= 0xF8FF:
         return True
@@ -59,7 +59,7 @@ for tbl in UNICODE_CNS_MAPPING_TABLE:
 with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os.path.join(output, "inter/CNS11643-UNICODE-PUA.txt"), "w") as pua:
     for cns in sorted(cns_ucs.keys()):
         ucs = cns_ucs[cns]
-        if inUnicodePUA(ucs):
+        if in_unicode_pua(ucs):
             pua.write("02{}\t01{}\n".format(cns, ucs))
         else:
             f.write("02{}\t01{}\n".format(cns, ucs))
