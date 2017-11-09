@@ -104,11 +104,22 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             cps = ",".join([compmap[int(x)] for x in cpss[0]])
             compdata[ucs] = cps
 
-with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp, open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
+zhcomp_m = {}
+cps_list = []
+with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp:
     for ucs in sorted(compdata.keys(), key=lambda x: int(x, 16)):
         cps = compdata[ucs]
+        if not cps in cps_list:
+            cps_list.append(cps)
         zhdecomp.write("01{}\t{}\n".format(ucs, cps))
-        zhcomp.write("{}\t01{}\n".format(cps, ucs))
+        if cps in zhcomp_m:
+            zhcomp_m[cps].append(ucs)
+        else:
+            zhcomp_m[cps] = [ucs]
+
+with open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
+    for cps in cps_list:
+        zhcomp.write("{}\t{}\n".format(cps, ",".join(["01{}".format(x) for x in zhcomp_m[cps]])))
 
 ################################################################################
 chewing_raw = {}
