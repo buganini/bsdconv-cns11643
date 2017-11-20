@@ -2,6 +2,7 @@ import os
 import sys
 import bsdconv
 import unicodedata
+import json
 
 dataset = sys.argv[1]
 output = sys.argv[2]
@@ -24,7 +25,7 @@ def in_unicode_pua(cp):
 
 brepr = bsdconv.Bsdconv("utf-8:bsdconv")
 def bsdconv_repr(s):
-    return brepr.conv(s)
+    return brepr.conv(s).decode("utf-8")
 
 def chewing_normalize(s):
     if s[0]=="˙":
@@ -103,6 +104,9 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
         if not error:
             cps = ",".join([compmap[int(x)] for x in cpss[0]])
             compdata[ucs] = cps
+
+with open(os.path.join(dataset, "compmap.json"), "w") as f:
+    json.dump(compmap, f)
 
 zhcomp_m = {}
 cps_list = []
