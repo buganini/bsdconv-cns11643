@@ -25,7 +25,7 @@ def in_unicode_pua(cp):
 
 brepr = bsdconv.Bsdconv("utf-8:bsdconv")
 def bsdconv_repr(s):
-    return brepr.conv(s).decode("utf-8")
+    return brepr.conv(s)
 
 def chewing_normalize(s):
     if s[0]=="˙":
@@ -51,9 +51,10 @@ for tbl in UNICODE_CNS_MAPPING_TABLE:
             l = l.strip()
             if not l:
                 continue
-            la = l.split("\t")
-            cns = "{}{}".format(p(la[0]), p(la[1]))
-            ucs = "{}".format(p(la[2]))
+            cns,ucs = l.split("\t")
+            cns = cns.split("-")
+            cns = "{}{}".format(p(cns[0]), p(cns[1]))
+            ucs = "{}".format(p(ucs))
             cns_ucs[cns] = ucs
             ucs_cns[ucs] = cns
 
@@ -86,10 +87,11 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
         l = l.strip()
         if not l:
             continue
-        la = l.split("\t")
-        cns = "{}{}".format(p(la[0]), p(la[1]))
+        cns, cpss = l.split("\t")
+        cns = cns.split("-")
+        cns = "{}{}".format(p(cns[0]), p(cns[1]))
         ucs = cns_ucs[cns]
-        cpss = la[2].split(";")
+        cpss = cpss.split(";")
         error = False
         try:
             for i, c in enumerate(cpss):
@@ -133,12 +135,13 @@ with open(os.path.join(dataset, "Properties/CNS_phonetic.txt")) as f:
         l = l.strip()
         if not l:
             continue
-        la = l.split("\t")
-        cns = "{}{}".format(p(la[0]), p(la[1]))
+        cns, bpmf = l.split("\t")
+        cns = cns.split("-")
+        cns = "{}{}".format(p(cns[0]), p(cns[1]))
         ucs = cns_ucs[cns]
-        phonetic = ",".join([bsdconv_repr(x) for x in chewing_normalize(la[2])])
+        phonetic = ",".join([bsdconv_repr(x) for x in chewing_normalize(bpmf)])
         chewing[ucs] = phonetic
-        chewing_raw[ucs] = la[2]
+        chewing_raw[ucs] = bpmf
 
 with open(os.path.join(output, "inter/CHEWING.txt"), "w") as out:
     for ucs in sorted(chewing.keys()):
