@@ -58,7 +58,7 @@ void cbconv(struct bsdconv_instance *ins){
 
 	sprintf(p,"<img class=\"cns11643_img\" src=\"http://www.cns11643.gov.tw/AIDB/png.do?page=");
 	TAILIZE(p);
-	sprintf(p,"%X", (unsigned char)data[0]);
+	sprintf(p,"%d", (unsigned char)data[0]);
 	TAILIZE(p);
 	sprintf(p,"&code=");
 	for(i=1;i<len;i++){

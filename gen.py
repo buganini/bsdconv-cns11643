@@ -50,7 +50,7 @@ for tbl in UNICODE_CNS_MAPPING_TABLE:
                 continue
             cns,ucs = l.split("\t")
             cns = cns.split("-")
-            cns = "{}{}".format(p(cns[0]), p(cns[1]))
+            cns = "{}{}".format(p("{:x}".format(int(cns[0]))), p(cns[1]))
             ucs = "{}".format(p(ucs))
             cns_ucs[cns] = ucs
             ucs_cns[ucs] = cns
@@ -86,7 +86,7 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             continue
         cns, cpss = l.split("\t")
         cns = cns.split("-")
-        cns = "{}{}".format(p(cns[0]), p(cns[1]))
+        cns = "{}{}".format(p("{:x}".format(int(cns[0]))), p(cns[1]))
         ucs = cns_ucs[cns]
         cpss = cpss.split(";")
         error = False
@@ -134,7 +134,7 @@ with open(os.path.join(dataset, "Properties/CNS_phonetic.txt")) as f:
             continue
         cns, bpmf = l.split("\t")
         cns = cns.split("-")
-        cns = "{}{}".format(p(cns[0]), p(cns[1]))
+        cns = "{}{}".format(p("{:x}".format(int(cns[0]))), p(cns[1]))
         ucs = cns_ucs[cns]
         phonetic = ",".join([bsdconv_repr(x) for x in chewing_normalize(bpmf)])
         chewing[ucs] = phonetic
