@@ -25,7 +25,7 @@ def in_unicode_pua(cp):
 
 brepr = bsdconv.Bsdconv("utf-8:bsdconv")
 def bsdconv_repr(s):
-    return brepr.conv(s)
+    return brepr.uconv(s)
 
 def chewing_normalize(s):
     if s[0]=="˙":
@@ -33,9 +33,6 @@ def chewing_normalize(s):
     if not s[-1] in "ˊˇˋ˙":
         s = s + " "
     return s
-
-def ascii_fold(s):
-    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 ################################################################################
 UNICODE_CNS_MAPPING_TABLE = (
@@ -150,7 +147,7 @@ with open(os.path.join(output, "inter/CHEWING.txt"), "w") as out:
 
 ################################################################################
 pinyin = {}
-with open(os.path.join(dataset, "Properties/CNS_pinyin.txt")) as f:
+with open(os.path.join(dataset, "Properties/CNS_pinyin_1.txt")) as f:
     for l in f:
         l = l.strip()
         if not l:
@@ -158,7 +155,7 @@ with open(os.path.join(dataset, "Properties/CNS_pinyin.txt")) as f:
         la = l.split("\t")
         chewing = la[0].replace("ˊ", "").replace("ˇ", "").replace("ˋ", "").replace("˙", "")
         chewing = ",".join([bsdconv_repr(x) for x in chewing])
-        pinyin[chewing] = ascii_fold(la[1])
+        pinyin[chewing] = la[1].replace("2", "").replace("3", "").replace("4", "").replace("5", "")
 
 cwpy_table = [
     ('013105', '015B,0162,015D'), # ㄅ => [b]

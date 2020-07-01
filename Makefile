@@ -54,7 +54,7 @@ work/data.zip:
 
 work/data: work/data.zip
 	mkdir -p work/data
-	unzip -d work/data work/data.zip
+	unzip -O cp950 -d work/data work/data.zip
 
 gen: work/data
 	python3 gen.py work/data/Open_Data modules
