@@ -96,7 +96,9 @@ with open(os.path.join(dataset, "Properties/CNS_component_word.txt"), encoding="
         if not l:
             continue
         la = l.split("\t")
-        compmap[int(la[0])] = "04" + p("{:X}".format(int(la[1])))
+        part = int(la[0])
+        # The special component has a reserved code, independent of its group.
+        compmap[part] = "0400" if part == 1111 else "04" + p("{:X}".format(int(la[1])))
 
 compdata = {}
 with open(os.path.join(dataset, "Properties/CNS_component.txt"), encoding="utf-8") as f:
@@ -113,10 +115,9 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt"), encoding="utf-8
         try:
             for i, c in enumerate(cpss):
                 cpss[i] = [int(x) for x in c.rstrip(",").split(",")]
-                for j,t in enumerate(cpss[i]):
-                    if not t in compmap:
-                        error = True
-                        print("Error:", l, "# undefined component", t)
+                for part in cpss[i]:
+                    # Preserve decompositions even when the source omits a definition.
+                    compmap.setdefault(part, "0400")
         except:
             error = True
             print("Error:", l, "# unexpected format")

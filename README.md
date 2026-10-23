@@ -46,6 +46,10 @@ ce4shi4
 
 * inter/ZH-COMP
 * inter/ZH-DECOMP
+
+特殊部件（官方 ID `1111`）與未定義的部件 ID 統一使用 `0400`。
+未定義部件不會造成整筆拆解資料被略過。
+
 ```
 $ printf "功夫不好不要艹我" | bsdconv utf-8:zh-decomp:zh-comp:utf-8
 巭孬嫑莪
