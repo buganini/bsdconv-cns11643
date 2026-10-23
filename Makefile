@@ -48,13 +48,25 @@ clean:
 
 # Source: https://data.gov.tw/dataset/5961
 
-work/data.zip:
-	mkdir -p work
-	wget -O work/data.zip http://www.cns11643.gov.tw/AIDB/Open_Data.zip
+CNS_DATA_URL=https://data.cns11643.gov.tw/opendata
 
-work/data: work/data.zip
+work/data/release.txt:
 	mkdir -p work/data
-	unzip -O cp950 -d work/data work/data.zip
+	wget -O $@.tmp ${CNS_DATA_URL}/release.txt
+	mv $@.tmp $@
 
-gen: work/data
-	python3 gen.py work/data/Open_Data modules
+work/%.zip: work/data/release.txt
+	mkdir -p work
+	wget -O $@.tmp ${CNS_DATA_URL}/$*.zip
+	mv $@.tmp $@
+	touch $@
+
+work/data/%/.extracted: work/%.zip
+	mkdir -p $(@D)
+	python3 -m zipfile -e $< $(@D)
+	touch $@
+
+.PHONY: gen
+.PRECIOUS: work/%.zip
+gen: work/data/MapingTables/.extracted work/data/Properties/.extracted
+	python3 gen.py work/data modules

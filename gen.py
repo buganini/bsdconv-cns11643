@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import os
+import re
 import sys
 import bsdconv
 import unicodedata
@@ -6,6 +8,20 @@ import json
 
 dataset = sys.argv[1]
 output = sys.argv[2]
+
+with open(os.path.join(dataset, "release.txt"), encoding="utf-8-sig") as f:
+    versions = dict(re.findall(r"檔案名稱：\s*(\S+)\s+版本：\s*(\d{8})\b", f.read()))
+for archive in ("MapingTables.zip", "Properties.zip"):
+    if archive not in versions:
+        sys.exit(f"Missing version for {archive} in release.txt")
+
+
+def write_header(f, *archives):
+    sources = [
+        f"https://data.cns11643.gov.tw/opendata/{name}.zip (version {versions[name + '.zip']})"
+        for name in archives
+    ]
+    f.write("# Generated from " + ", ".join(sources) + "\n")
 
 def p(s):
     s = s.lstrip("0")
@@ -38,12 +54,13 @@ def chewing_normalize(s):
 UNICODE_CNS_MAPPING_TABLE = (
     "MapingTables/Unicode/CNS2UNICODE_Unicode BMP.txt",
     "MapingTables/Unicode/CNS2UNICODE_Unicode 2.txt",
+    "MapingTables/Unicode/CNS2UNICODE_Unicode 3.txt",
     "MapingTables/Unicode/CNS2UNICODE_Unicode 15.txt",
 )
 cns_ucs = {}
 ucs_cns = {}
 for tbl in UNICODE_CNS_MAPPING_TABLE:
-    with open(os.path.join(dataset, tbl)) as f:
+    with open(os.path.join(dataset, tbl), encoding="utf-8") as f:
         for l in f:
             l = l.strip()
             if not l:
@@ -55,7 +72,9 @@ for tbl in UNICODE_CNS_MAPPING_TABLE:
             cns_ucs[cns] = ucs
             ucs_cns[ucs] = cns
 
-with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os.path.join(output, "inter/CNS11643-UNICODE-PUA.txt"), "w") as pua:
+with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w", encoding="utf-8") as f, open(os.path.join(output, "inter/CNS11643-UNICODE-PUA.txt"), "w", encoding="utf-8") as pua:
+    write_header(f, "MapingTables")
+    write_header(pua, "MapingTables")
     for cns in sorted(cns_ucs.keys()):
         ucs = cns_ucs[cns]
         if in_unicode_pua(ucs):
@@ -63,14 +82,15 @@ with open(os.path.join(output, "inter/CNS11643-UNICODE.txt"), "w") as f, open(os
         else:
             f.write("02{}\t01{}\n".format(cns, ucs))
 
-with open(os.path.join(output, "inter/CNS11643.txt"), "w") as f:
+with open(os.path.join(output, "inter/CNS11643.txt"), "w", encoding="utf-8") as f:
+    write_header(f, "MapingTables")
     for ucs in sorted(ucs_cns.keys()):
         cns = ucs_cns[ucs]
         f.write("01{}\t02{}\n".format(ucs, cns))
 
 ################################################################################
 compmap = {1111:"0400"}
-with open(os.path.join(dataset, "Properties/CNS_component_word.txt")) as f:
+with open(os.path.join(dataset, "Properties/CNS_component_word.txt"), encoding="utf-8") as f:
     for l in f:
         l = l.strip()
         if not l:
@@ -79,7 +99,7 @@ with open(os.path.join(dataset, "Properties/CNS_component_word.txt")) as f:
         compmap[int(la[0])] = "04" + p("{:X}".format(int(la[1])))
 
 compdata = {}
-with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
+with open(os.path.join(dataset, "Properties/CNS_component.txt"), encoding="utf-8") as f:
     for l in f:
         l = l.strip()
         if not l:
@@ -92,7 +112,7 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
         error = False
         try:
             for i, c in enumerate(cpss):
-                cpss[i] = [int(x) for x in c.split(",")]
+                cpss[i] = [int(x) for x in c.rstrip(",").split(",")]
                 for j,t in enumerate(cpss[i]):
                     if not t in compmap:
                         error = True
@@ -104,12 +124,13 @@ with open(os.path.join(dataset, "Properties/CNS_component.txt")) as f:
             cps = ",".join([compmap[int(x)] for x in cpss[0]])
             compdata[ucs] = cps
 
-with open(os.path.join(dataset, "compmap.json"), "w") as f:
+with open(os.path.join(dataset, "compmap.json"), "w", encoding="utf-8") as f:
     json.dump(compmap, f)
 
 zhcomp_m = {}
 cps_list = []
-with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp:
+with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w", encoding="utf-8") as zhdecomp:
+    write_header(zhdecomp, "MapingTables", "Properties")
     for ucs in sorted(compdata.keys(), key=lambda x: int(x, 16)):
         cps = compdata[ucs]
         if not cps in cps_list:
@@ -120,14 +141,15 @@ with open(os.path.join(output, "inter/ZH-DECOMP.txt"), "w") as zhdecomp:
         else:
             zhcomp_m[cps] = [ucs]
 
-with open(os.path.join(output, "inter/ZH-COMP.txt"), "w") as zhcomp:
+with open(os.path.join(output, "inter/ZH-COMP.txt"), "w", encoding="utf-8") as zhcomp:
+    write_header(zhcomp, "MapingTables", "Properties")
     for cps in cps_list:
         zhcomp.write("{}\t{}\n".format(cps, ",".join(["01{}".format(x) for x in zhcomp_m[cps]])))
 
 ################################################################################
 chewing_raw = {}
 chewing = {}
-with open(os.path.join(dataset, "Properties/CNS_phonetic.txt")) as f:
+with open(os.path.join(dataset, "Properties/CNS_phonetic.txt"), encoding="utf-8") as f:
     for l in f:
         l = l.strip()
         if not l:
@@ -140,14 +162,15 @@ with open(os.path.join(dataset, "Properties/CNS_phonetic.txt")) as f:
         chewing[ucs] = phonetic
         chewing_raw[ucs] = bpmf
 
-with open(os.path.join(output, "inter/CHEWING.txt"), "w") as out:
+with open(os.path.join(output, "inter/CHEWING.txt"), "w", encoding="utf-8") as out:
+    write_header(out, "MapingTables", "Properties")
     for ucs in sorted(chewing.keys()):
         phonetic = chewing[ucs]
         out.write("01{}\t{}\n".format(ucs, phonetic))
 
 ################################################################################
 pinyin = {}
-with open(os.path.join(dataset, "Properties/CNS_pinyin_1.txt")) as f:
+with open(os.path.join(dataset, "Properties/CNS_pinyin_1.txt"), encoding="utf-8") as f:
     for l in f:
         l = l.strip()
         if not l:
@@ -201,7 +224,8 @@ cwpy_table = [
     ('0102D9', '0135'), # ˙ => 5
 ]
 
-with open(os.path.join(output, "inter/HAN-PINYIN.txt"), "w") as out:
+with open(os.path.join(output, "inter/HAN-PINYIN.txt"), "w", encoding="utf-8") as out:
+    write_header(out, "Properties")
     for cw in sorted(pinyin.keys()):
         py = ",".join([bsdconv_repr(x) for x in pinyin[cw]])
         out.write("{}\t{}\n".format(cw, py))
